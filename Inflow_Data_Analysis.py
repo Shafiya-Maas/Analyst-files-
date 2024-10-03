@@ -12,8 +12,8 @@ import calendar
 from dateutil.relativedelta import relativedelta
 
 # Load the data
-df = pd.read_csv("D:\\Project_1\\Transaction_Vs_Billing_data (3).csv")
-target_df = pd.read_csv("D:\\Project_1\\Target Data.csv")
+df = pd.read_csv("Transaction_Vs_Billing_data (3).csv")
+target_df = pd.read_csv("Target Data.csv")
 
 # Convert 'date' to datetime
 df['date'] = pd.to_datetime(df['date'])
