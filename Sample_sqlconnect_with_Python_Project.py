@@ -1,36 +1,28 @@
 import mysql.connector
 import warnings
-import os
+warnings.filterwarnings('ignore')
 import pandas as pd
 import numpy as np
 import streamlit as st 
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-warnings.filterwarnings('ignore')
+# Connect to MySQL database
+db = mysql.connector.connect(
+    host="127.0.0.1",
+    user="root",
+    passwd="Year@2024",
+    database="world",
+    use_pure=True
+)
 
-# Get database connection details from environment variables
-db_host = os.getenv('DB_HOST', '127.0.0.1')
-db_user = os.getenv('DB_USER', 'root')
-db_password = os.getenv('DB_PASSWORD', 'Year@2024')
-db_name = os.getenv('DB_NAME', 'world')
+cur = db.cursor()
+query = """SELECT * FROM city"""
+cur.execute(query)
+result = cur.fetchall()
 
-# Connect to MySQL database with error handling
-try:
-    db = mysql.connector.connect(
-        host=db_host,
-        user=db_user,
-        passwd=db_password,
-        database=db_name,
-        use_pure=True
-    )
-    cur = db.cursor()
-    query = """SELECT * FROM city"""
-    cur.execute(query)
-    result = cur.fetchall()
-
-    # Load data into a DataFrame
-    df = pd.DataFrame(result, columns=[desc[0] for desc in cur.description])
+# Load data into a DataFrame
+df = pd.DataFrame(result, columns=[desc[0] for desc in cur.description])
 
 # Set page configuration
 st.set_page_config(page_title="Sample SQL connect with Python", page_icon=":bar_chart:", layout="wide")
