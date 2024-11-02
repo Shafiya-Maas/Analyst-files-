@@ -29,7 +29,7 @@ try:
     result = cur.fetchall()
 
     # Load data into a DataFrame
-    df = pd.DataFrame(result, columns=[desc[0] for desc in cur.description])
+    df = pd.DataFrame(Sample_sqlconnect_with_Python_Project.py)
 
     cur.close()
     db.close()
