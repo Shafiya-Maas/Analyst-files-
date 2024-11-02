@@ -9,7 +9,7 @@ import seaborn as sns
 warnings.filterwarnings('ignore')
 
 # Local database connection details
-db_host = '127.0.0.1'
+db_host = 'localhost'
 db_user = 'root'
 db_password = 'Year@2024'
 db_name = 'world'
