@@ -32,12 +32,6 @@ try:
     # Load data into a DataFrame
     df = pd.DataFrame(result, columns=[desc[0] for desc in cur.description])
 
-    cur.close()
-    db.close()
-except mysql.connector.Error as err:
-    st.error(f"Error: {err}")
-    st.stop()
-
 # Set page configuration
 st.set_page_config(page_title="Sample SQL connect with Python", page_icon=":bar_chart:", layout="wide")
 
