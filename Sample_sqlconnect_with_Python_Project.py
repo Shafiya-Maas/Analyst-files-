@@ -1,11 +1,10 @@
-import mysql.connector
-import warnings
-warnings.filterwarnings('ignore')
-import pandas as pd
-import numpy as np
-import streamlit as st 
-import matplotlib.pyplot as plt
-import seaborn as sns
+streamlit
+mysql-connector-python
+pandas
+numpy
+matplotlib
+seaborn
+
 
 # Connect to MySQL database
 db = mysql.connector.connect(
