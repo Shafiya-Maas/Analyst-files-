@@ -9,7 +9,7 @@ import seaborn as sns
 
 # Connect to MySQL database
 db = mysql.connector.connect(
-    host="localhost",
+    host="127.0.0.1",
     user="root",
     passwd="Year@2024",
     database="world",
