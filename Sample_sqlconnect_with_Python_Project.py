@@ -1,41 +1,26 @@
 import mysql.connector
 import warnings
+warnings.filterwarnings('ignore')
 import pandas as pd
 import numpy as np
 import streamlit as st 
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-warnings.filterwarnings('ignore')
+# Connect to MySQL database
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    passwd="Year@2024",
+    database="world",
+    use_pure=True
+)
 
-# Local database connection details
-db_host = 'localhost'
-db_user = 'root'
-db_password = 'Year@2024'
-db_name = 'world'
+# Retrieve only necessary columns from the city table
+query = """SELECT District, Population, Name AS City FROM city"""
+df = pd.read_sql(query, db)
 
-# Connect to MySQL database with error handling
-try:
-    db = mysql.connector.connect(
-        host=db_host,
-        user=db_user,
-        passwd=db_password,
-        database=db_name,
-        use_pure=True
-    )
-    cur = db.cursor()
-    query = """SELECT * FROM city"""
-    cur.execute(query)
-    result = cur.fetchall()
-
-    # Load data into a DataFrame
-    df=pd.read_sql("Sample_sqlconnect_with_Python_Project.py")
-
-    cur.close()
-    db.close()
-except mysql.connector.Error as err:
-    st.error(f"Error: {err}")
-    st.stop()
+db.close()
 
 # Set page configuration
 st.set_page_config(page_title="Sample SQL connect with Python", page_icon=":bar_chart:", layout="wide")
