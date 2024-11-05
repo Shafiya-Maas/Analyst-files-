@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 import calendar
 
 # Load the data
-df = pd.read_csv("D:\\Project_1\\Transaction_Vs_Billing_data (3).csv")
+df = pd.read_csv("Transaction_Vs_Billing_data (3).csv")
 
 # Set page configuration
 st.set_page_config(page_title="Fy 24 Monthwise & FY 25 running month", page_icon=":bar_chart:", layout="wide")
