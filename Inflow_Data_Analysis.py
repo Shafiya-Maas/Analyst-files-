@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Sep  3 14:36:37 2024
-
-@author: K02090
-"""
-
 import streamlit as st
 import pandas as pd
 from datetime import datetime, date
@@ -13,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 
 # Load the data
 df = pd.read_csv("Transaction_Vs_Billing_data (3).csv")
-target_df = pd.read_csv("Target Data.csv")
+target_df = pd.read_csv("D:\\Project_1\\Target Data.csv")
 
 # Convert 'date' to datetime
 df['date'] = pd.to_datetime(df['date'])
@@ -33,9 +26,8 @@ start_year = current_year if current_month > 2 else current_year - 1
 # Start date is the first day of the start_month
 start_date_default = date(start_year, start_month, 1)
 
-# End date is the last day of the current_month
-last_day_of_end_month = calendar.monthrange(current_year, current_month)[1]
-end_date_default = date(current_year, current_month, last_day_of_end_month)
+# End date is today (or adjust as needed)
+end_date_default = today
 
 # Set page configuration
 st.set_page_config(page_title="Inflow Source Data Analysis", page_icon=":bar_chart:", layout="wide")
@@ -46,71 +38,20 @@ st.title("📊 Inflow Source Data Analysis")
 # Add widgets for filtering the data
 st.sidebar.header("Filter Options")
 
+# Clear Filters button action
+if st.sidebar.button("Clear Filters"):
+    st.session_state['start_date'] = start_date_default
+    st.session_state['end_date'] = end_date_default
+    # Rerun the app to reflect the reset values
+    st.experimental_rerun()
+
+
 # Add date filters in the Streamlit sidebar with default values
 st.sidebar.header("Filter by Date Range")
 start_date = st.sidebar.date_input("From Date", value=start_date_default)
-end_date = st.sidebar.date_input("To Date", value=end_date_default)
+end_date = st.sidebar.date_input("To Date", value=today)
 
-# Filter the data based on the selected date range
-filtered_data = df[(df['date'] >= pd.to_datetime(start_date)) & (df['date'] <= pd.to_datetime(end_date))]
-
-# Apply condition to include only inflow data with garage type FOFO or COCO
-filtered_data = filtered_data[
-    (filtered_data['status type'].str.lower() == 'inflow') & 
-    (filtered_data['garage type'].isin(['FOCO', 'COCO']))
-]
-
-# Calculate the sum of labor amount, parts amount, and other necessary KPIs from the filtered data
-labor_amount = filtered_data['labor amount'].count()
-parts_amount = filtered_data['parts amount'].count()
-
-# Create columns for the KPIs
-kpi1, kpi2 = st.columns(2)
-
-# Fill in the columns with respective metrics or KPIs with zigzag background colors
-kpi1.markdown(f"""
-    <div style="background: repeating-linear-gradient(
-        45deg,
-        #ADD8E6,
-        #ADD8E6 10px,
-        #FFFFFF 10px,
-        #FFFFFF 20px
-      ); padding: 10px; border-radius: 5px;">
-        <h3>Labor Amount 💼</h3>
-        <p style="font-size: 24px;">₹ {labor_amount:,.2f}</p>
-    </div>
-""", unsafe_allow_html=True)
-
-
-kpi2.markdown(f"""
-    <div style="background: repeating-linear-gradient(
-        45deg,
-        #90EE90,
-        #90EE90 10px,
-        #FFFFFF 10px,
-        #FFFFFF 20px
-      ); padding: 10px; border-radius: 5px;">
-        <h3>Parts Amount 🔧</h3>
-        <p style="font-size: 24px;">₹ {parts_amount:,.2f}</p>
-    </div>
-""", unsafe_allow_html=True)
-
-# Fill in the columns with respective metrics or KPIs with background colors
-kpi1.markdown(f"""
-    <div style="background-color: #ADD8E6; padding: 10px; border-radius: 5px;">
-        <h3>Labor Amount 💼</h3>
-        <p style="font-size: 24px;">₹ {labor_amount:,.2f}</p>
-    </div>
-""", unsafe_allow_html=True)
-
-kpi2.markdown(f"""
-    <div style="background-color: #90EE90; padding: 10px; border-radius: 5px;">
-        <h3>Parts Amount 🔧</h3>
-        <p style="font-size: 24px;">₹ {parts_amount:,.2f}</p>
-    </div>
-""", unsafe_allow_html=True)
-
-# Function to generate month names
+# Define the `get_month_data` function to generate month names
 def get_month_name(year, month):
     return datetime(year, month, 1).strftime('%B %Y')
 
@@ -121,8 +62,96 @@ def get_month_data(year, month, data_source):
     month_counts = month_data.groupby(['major source', 'status type']).size().reset_index(name=month_name)
     return month_counts
 
+# Keep an unfiltered version of the data for month calculations
+filtered_data = df.copy()
+
+# Apply condition to include only inflow data with garage type FOFO or COCO
+filtered_data = filtered_data[
+    (filtered_data['status type'].str.lower() == 'inflow') & 
+    (filtered_data['garage type'].isin(['FOCO', 'COCO']))
+]
+
+
+# --- KPI Calculations ---
+# Filter by the selected date range for KPIs
+kpi_filtered_data = filtered_data[
+    (filtered_data['date'] >= pd.to_datetime(start_date)) & 
+    (filtered_data['date'] <= pd.to_datetime(end_date))
+]
+
+# Sum of labor and parts amounts
+labor_amount = kpi_filtered_data['labor amount'].count()
+parts_amount = kpi_filtered_data['parts amount'].count()
+
+
+# Create two columns for the KPIs
+kpi1, kpi2 = st.columns(2)
+
+# Define colors for the KPIs
+labor_color_bg = "#FFC1C1"   # Light Coral for Labor Amount
+labor_color_text = "#B22222"  # Firebrick for text
+
+parts_color_bg = "#C1FFC1"   # Light Green for Parts Amount
+parts_color_text = "#228B22"  # Forest Green for text
+
+# Fill in the columns with respective metrics or KPIs with background colors
+kpi1.markdown(f"""
+    <div style="background-color: {labor_color_bg}; padding: 15px; border-radius: 10px; 
+                box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1); text-align: center;">
+        <h3 style="color: {labor_color_text};">Labor Amount</h3>
+        <p style="font-size: 24px; color: {labor_color_text};"><b>₹ {labor_amount:,.2f}</b></p>
+    </div>
+""", unsafe_allow_html=True)
+
+kpi2.markdown(f"""
+    <div style="background-color: {parts_color_bg}; padding: 15px; border-radius: 10px; 
+                box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1); text-align: center;">
+        <h3 style="color: {parts_color_text};">Parts Amount</h3>
+        <p style="font-size: 24px; color: {parts_color_text};"><b>₹ {parts_amount:,.2f}</b></p>
+    </div>
+""", unsafe_allow_html=True)
+
+
+
+
+# Fill in the three columns with respective metrics or KPIs
+kpi1.metric(
+    label="Labor Amount ",
+    value=f"₹ {labor_amount:,.2f}",  # Format to two decimal places with thousands separator
+    delta=None,  # You can add delta if needed (change in amount)
+)
+
+kpi2.metric(
+    label="Parts Amount ",
+    value=f"₹ {parts_amount:,.2f}",  # Format to two decimal places with thousands separator
+    delta=None,  # You can add delta if needed (change in amount)
+)
+
+
+kpi1.markdown(
+    """
+    <div style="background-color: #F0F8FF; padding: 15px; border-radius: 10px; 
+                box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1); text-align: center;">
+        <h3 style="color: #1E90FF;"> Labor Amount</h3>
+        <p style="font-size: 24px; color: #1E90FF;"><b>₹ {0:,.2f}</b></p>
+    </div>
+    """.format(labor_amount),
+    unsafe_allow_html=True
+)
+
+kpi2.markdown(
+    """
+    <div style="background-color: #E6FFE6; padding: 15px; border-radius: 10px; 
+                box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1); text-align: center;">
+        <h3 style="color: #32CD32;"> Parts Amount</h3>
+        <p style="font-size: 24px; color: #32CD32;"><b>₹ {0:,.2f}</b></p>
+    </div>
+    """.format(parts_amount),
+    unsafe_allow_html=True
+)
+
 # Adjust the data collection process
-def collect_monthly_data(end_date, filtered_data):
+def collect_monthly_data(end_date):
     # Collect data for the selected month (MTD) and the previous two months (M - 1, M - 2)
     mtd_data = get_month_data(end_date.year, end_date.month, filtered_data)
     m_minus_1_date = pd.Timestamp(end_date) - relativedelta(months=1)
@@ -150,6 +179,10 @@ def collect_monthly_data(end_date, filtered_data):
 
     return pivot_table
 
+# Rest of the code ...
+
+
+# Define the get_target_value_for_mtd function here
 def get_target_value_for_mtd(row):
     major_source = row['major source']
     
@@ -173,7 +206,7 @@ def get_target_value_for_mtd(row):
     return target_data_mtd
 
 # Collect and prepare the pivot table data
-pivot_table = collect_monthly_data(end_date, filtered_data)
+pivot_table = collect_monthly_data(end_date)
 
 # Apply the target mapping to the 'Target' column only for the MTD month
 if pivot_table is not None:
@@ -208,6 +241,7 @@ if pivot_table is not None:
     # Display the styled pivot table
     st.write("Pivot Table: Count of Sources")
     st.dataframe(styled_table, hide_index=True)
+
 
 
 
